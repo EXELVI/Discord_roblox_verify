@@ -1,11 +1,11 @@
 require('events').EventEmitter.prototype._maxListeners = 200;
+require('dotenv').config();
 
 const Discord = require('discord.js');
 const client = require('./client.js');
 
 const manager = require('./manager.js');
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -40,6 +40,24 @@ databasePromise.then(() => {
     console.log("🔌 Connected to the database")
 }).catch(err => {
     console.error(err)
+})
+
+client.on("interactionCreate", async interaction => {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+    if (command.permissions) {
+        if (command.permissions.length) {
+            if (!interaction.member.permissions.has(command.permissions)) {
+                return interaction.reply({ content: "You do not have permission to use this command", ephemeral: true });
+            }
+        }
+    }        
+    try {
+        command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
 })
 
 var app = express();
@@ -96,6 +114,8 @@ httpServer.listen(port, () => {
 httpsServer.listen(port2, () => {
     console.log('HTTPS Server running on port ' + port2)
 });
+
+client.login(process.env.token);
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
