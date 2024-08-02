@@ -4,7 +4,6 @@ require('dotenv').config();
 const Discord = require('discord.js');
 const client = require('./client.js');
 
-const manager = require('./manager.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -12,6 +11,9 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+
+const port = 3001;
+const port2 = 3000;
 
 //Commands
 client.commands = new Discord.Collection();
@@ -73,7 +75,6 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
-app.use(cookieParser());
 
 
 router.get("/get/:userID", async (req, res) => {
@@ -97,7 +98,8 @@ router.post("/verify", async (req, res) => {
 });
 
 
-app.use(router, "/database");
+
+app.use("/database", router);
 
 
 

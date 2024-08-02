@@ -4,7 +4,8 @@ module.exports = {
     name: 'ping',
     description: "Shows the bot's latency",
     category: "general",
-    async execute(interaction, client) {
+    async execute(interaction) {
+        const client = require('../../client.js');
         interaction.channel.send('Calculating...').then(async (msg) => {
             msg.delete()
             var embed = new Discord.EmbedBuilder()
