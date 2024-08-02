@@ -8,6 +8,7 @@ module.exports = {
         if (!interaction.isButton()) return;
         if (interaction.customId !== 'verify') return;
 
+
         const dm = await interaction.user.createDM();
 
         var embed = new Discord.EmbedBuilder()
@@ -15,9 +16,16 @@ module.exports = {
             .setDescription('Please enter your Roblox username.')
             .setColor('Blue');
 
-        interaction.reply({ content: 'Please check your DMs.', ephemeral: true });
+        if (interaction.channel.type == Discord.ChannelType.DM) {
+            interaction.reply({ embeds: [embed] }).then(verifyProcess)
+        } else {
 
-        dm.send({ embeds: [embed] }).then(async () => {
+            interaction.reply({ content: 'Please check your DMs.', ephemeral: true });
+            dm.send({ embeds: [embed] }).then(verifyProcess)
+        }
+
+
+        async function verifyProcess() {
             const filter = m => m.author.id === interaction.user.id;
             dm.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
                 .then(async collected => {
@@ -55,7 +63,7 @@ module.exports = {
                         collector.on('collect', async i => {
                             if (i.customId === 'yes') {
                                 const db = (await require('../../db.js')).db('roblox');
-                              var userDb = await db.collection('users').findOne({ userID: user.id });
+                                var userDb = await db.collection('users').findOne({ userID: user.id });
                                 if (!userDb) {
                                     await db.collection('users').insertOne({ userID: user.id, discordID: interaction.user.id, verified: false, awaitingVerification: true });
                                 } else {
@@ -66,9 +74,12 @@ module.exports = {
                                     .setTitle('Verification')
                                     .setDescription('Please enter in [this experience](https://www.roblox.com/games/) to complete the verification process.')
                                     .setColor('Green');
+
+                                dm.send({ embeds: [embed] });
+                               
                             } else if (i.customId === 'no') {
                                 embed = new Discord.EmbedBuilder()
-                                    .setTitle('Do you want to verify again?')
+                                    .setTitle('Do you want to restart the verification process?')
                                     .setColor('Blue');
 
                                 let button = new Discord.ButtonBuilder()
@@ -80,23 +91,32 @@ module.exports = {
                                 let row = new Discord.ActionRowBuilder()
                                     .addComponents(button);
 
-                                i.update({ embeds: [embed], components: [row] });
+                                i.message.edit({ embeds: [embed], components: [row] });
 
                                 collector.stop();
 
                             }
                         });
+                        collector.on('end', async (collected, reason) => {
+                            if (reason === 'time') {
+                                embed = new Discord.EmbedBuilder()
+                                    .setTitle('Verification')
+                                    .setDescription('You took too long to respond.')
+                                    .setColor('Red');
 
-                        collector.on('end', async () => {
-                            dm.send('Verification timed out.');
+                                i.message.edit({ embeds: [embed], components: [] });
+                            }
                         });
+                    });
 
 
 
 
-                    })
 
 
                 })
+
+
         }
+    }
 }
