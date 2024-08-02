@@ -11,9 +11,11 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const logger = require('morgan');
+const {fetch} = require('undici');
 
-const port = 3001;
-const port2 = 3000;
+const port = 3000;
+const port2 = 3001;
 
 //Commands
 client.commands = new Discord.Collection();
@@ -75,10 +77,11 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
+app.use(logger('dev'));
 
 
 router.get("/get/:userID", async (req, res) => {
-    var user = req.params.userID;
+    var user = parseInt(req.params.userID);
     const db = (await databasePromise).db("roblox");
     var user = await db.collection("users").findOne({ userID: user });
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -87,14 +90,30 @@ router.get("/get/:userID", async (req, res) => {
 });
 
 router.post("/verify", async (req, res) => {
-    var user = req.body.userID;
-    
+    var username = req.body.username;
+
+    let userID = await fetch(`https://users.roblox.com/v1/usernames/users`, { method: 'POST', body: JSON.stringify({ usernames: [username] }), headers: { 'Content-Type': 'application/json' } }).then(res => res.json()).then(json => json.data[0].id);
+
     const db = (await databasePromise).db("roblox");
-    var user = await db.collection("users").findOne({ userID: user });
+    var user = await db.collection("users").findOne({ userID: userID });
     if (!user) return res.status(404).json({ error: "User not found" });
     
     db.collection("users").updateOne({ userID: user.userID }, { $set: { verified: true } });
     res.json({ success: true });
+
+    client.guilds.cache.get("587945307908603916").members.fetch(user.discordID).then(member => {
+        member.roles.add("1268991912409301002");
+    });
+
+    client.users.fetch(user.discordID).then(user => {
+        
+        const embed = new Discord.EmbedBuilder()
+            .setTitle('Verification')
+            .setDescription('You have been verified!')
+            .setColor('Green');
+
+        user.send({ embeds: [embed] });
+    });
 });
 
 

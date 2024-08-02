@@ -69,15 +69,40 @@ module.exports = {
                                 } else {
                                     await db.collection('users').updateOne({ userID: user.id }, { $set: { discordID: interaction.user.id, verified: false, awaitingVerification: true } });
                                 }
+                                let buttonYes = new Discord.ButtonBuilder()
+                                    .setCustomId('yes')
+                                    .setLabel('Yes')
+                                    .setStyle('Success')
+                                    .setDisabled(true);
+
+                                let buttonNo = new Discord.ButtonBuilder()
+                                    .setCustomId('no')
+                                    .setLabel('No')
+                                    .setStyle('Danger')
+                                    .setDisabled(true);
+
+                                let row = new Discord.ActionRowBuilder()
+                                    .addComponents(buttonYes, buttonNo);
+
+                                i.deferUpdate();
+                                i.message.edit({ embeds: [embed], components: [row] });
+
 
                                 embed = new Discord.EmbedBuilder()
                                     .setTitle('Verification')
-                                    .setDescription('Please enter in [this experience](https://www.roblox.com/games/) to complete the verification process.')
+                                    .setDescription('Please enter in [this experience](https://www.roblox.com/games/9853480045/Verify) to complete the verification process.')
                                     .setColor('Green');
 
-                                dm.send({ embeds: [embed] });
-                               
+                                let urlButton = new Discord.ButtonBuilder()
+                                    .setLabel('Join Game')
+                                    .setStyle('Link')
+                                    .setURL('https://www.roblox.com/games/9853480045/Verify');
+
+
+                                dm.send({ embeds: [embed], components: [new Discord.ActionRowBuilder().addComponents(urlButton)] });
+
                             } else if (i.customId === 'no') {
+                                i.deferUpdate();
                                 embed = new Discord.EmbedBuilder()
                                     .setTitle('Do you want to restart the verification process?')
                                     .setColor('Blue');
@@ -104,7 +129,7 @@ module.exports = {
                                     .setDescription('You took too long to respond.')
                                     .setColor('Red');
 
-                                i.message.edit({ embeds: [embed], components: [] });
+                                dm.send({ embeds: [embed] });
                             }
                         });
                     });

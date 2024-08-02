@@ -4,7 +4,7 @@ print("Loaded")
 
 --Joining
 Players.PlayerAdded:Connect(function(plr)
-	local dbData = http:JSONDecode(http:GetAsync("https://0.0.0.0/database/get/" .. plr.UserId)).verified
+	local dbData = http:JSONDecode(http:GetAsync("https://0.0.0.0/database/get/" .. plr.UserId))
 	if dbData.verified == true then
 		if not plr.UserId == "354603387" then
 			plr:Kick("You are already verified!")
