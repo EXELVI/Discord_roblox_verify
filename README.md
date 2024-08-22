@@ -1,7 +1,6 @@
 # 🤖 Discord Roblox Verification System
 
 ![Repo Size](https://img.shields.io/github/repo-size/EXELVI/Discord_roblox_verify?style=for-the-badge)
-![License](https://img.shields.io/github/license/EXELVI/Discord_roblox_verify?style=for-the-badge)
 ![Node.js](https://img.shields.io/badge/Node.js-14.x%20or%20higher-green?style=for-the-badge)
 ![Discord.js](https://img.shields.io/badge/Discord.js-v14-blue?style=for-the-badge)
 
