@@ -100,6 +100,7 @@ module.exports = {
 
 
                                 dm.send({ embeds: [embed], components: [new Discord.ActionRowBuilder().addComponents(urlButton)] });
+                                collector.stop();
 
                             } else if (i.customId === 'no') {
                                 i.deferUpdate();
